@@ -60,5 +60,28 @@ namespace N_Tier_Architecture.business.Services.Implementaions
             _unitOfWork.Customers.Delete(customer);
             await _unitOfWork.SaveAsync();
         }
+
+        public Task<Customer?> GetCustomerByAuthUserIdAsync(string authUserId)
+        {
+            throw new NotImplementedException();
+        }
+        //public async Task<Customer?> GetCustomerByAuthUserIdAndEmailAsync(string authUserId, string email)
+        //{
+        //    return await _unitOfWork.Customers.FindAsync(c => c.AuthUserId == authUserId && c.CustomerEmail == email);
+        //}
+
+        public Task<Customer?> GetCustomerByAuthUserIdAndEmailAsync(string authUserId, string email)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Customer?> GetCustomerAsync(ISpecification<Customer> specification)
+        {
+            return (Customer?)await _unitOfWork.Customers.FindAsync(specification.Criteria);
+        }
+        //public async Task<Customer?> GetCustomerByAuthUserIdAsync(string authUserId)
+        //{
+        //    return await _unitOfWork.Customers.FindAsync(c => c.AuthUserId == authUserId);
+        //}
     }
 }

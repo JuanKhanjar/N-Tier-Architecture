@@ -21,3 +21,12 @@ namespace N_Tier_Architecture.core.Entities
         public ICollection<OrderDetail>? OrderDetails { get; set; } = [];
     }
 }
+/*
+ 
+ modelBuilder.Entity<Order>()
+    .HasIndex(o => o.CustomerId); // Speeds up lookups of orders by customer
+
+modelBuilder.Entity<Order>()
+    .HasIndex(o => o.OrderDate); // Useful for filtering and sorting by order date
+
+ */

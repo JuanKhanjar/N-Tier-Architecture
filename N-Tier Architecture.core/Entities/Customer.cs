@@ -13,7 +13,7 @@ namespace N_Tier_Architecture.core.Entities
         public Guid CustomerId { get; set; } = Guid.NewGuid();
 
         //[Required]
-        //public string AuthUserId { get; set; } // Unique user identifier from the Authentication API
+        public string? AuthUserId { get; set; } // Unique user identifier from the Authentication API
 
 
         [Required]
@@ -28,3 +28,33 @@ namespace N_Tier_Architecture.core.Entities
         public ICollection<Order>? Orders { get; set; }=new List<Order>();
     }
 }
+
+
+/*
+ 
+ modelBuilder.Entity<Customer>()
+    .HasIndex(c => c.AuthUserId)
+    .IsUnique(); // Ensure fast lookups and prevent duplicate users
+
+modelBuilder.Entity<Customer>()
+    .HasIndex(c => c.CustomerEmail)
+    .IsUnique(); // Ensure fast lookups and prevent duplicate emails
+
+modelBuilder.Entity<Customer>()
+    .HasIndex(c => c.IsActive); // Useful for filtering active/inactive customers
+
+
+ modelBuilder.Entity<Customer>(entity =>
+    {
+        entity.HasIndex(c => c.AuthUserId)
+              .IsUnique(); // Ensure AuthUserId is unique
+
+        entity.HasIndex(c => c.CustomerEmail)
+              .IsUnique(); // Ensure CustomerEmail is unique
+
+        entity.HasIndex(c => new { c.AuthUserId, c.CustomerEmail })
+              .IsUnique(); // Composite unique constraint for AuthUserId and CustomerEmail
+    });
+
+
+ */

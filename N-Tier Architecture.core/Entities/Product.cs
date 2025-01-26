@@ -31,3 +31,11 @@ namespace N_Tier_Architecture.core.Entities
         public ICollection<OrderDetail>? OrderDetails { get; set; } = [];
     }
 }
+/*
+ modelBuilder.Entity<Product>()
+   .HasIndex(p => p.CategoryId); // Speeds up queries filtering by category
+
+modelBuilder.Entity<Product>()
+   .HasIndex(p => new { p.ProductName, p.Price }); // Composite index for filtering and sorting by name and price
+
+ */

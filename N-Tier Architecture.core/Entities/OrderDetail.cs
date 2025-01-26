@@ -28,3 +28,17 @@ namespace N_Tier_Architecture.core.Entities
         
     }
 }
+
+
+/*
+ modelBuilder.Entity<OrderDetail>()
+    .HasIndex(od => od.ProductId); // Speeds up filtering by product
+
+modelBuilder.Entity<OrderDetail>()
+    .HasIndex(od => od.OrderId); // Speeds up joins and filtering by order
+
+modelBuilder.Entity<OrderDetail>()
+    .HasIndex(od => new { od.OrderId, od.ProductId }) // Composite index for filtering/order-detail joins
+    .IsUnique(); // Ensure uniqueness of order-product combinations
+
+ */

@@ -19,4 +19,11 @@ namespace N_Tier_Architecture.core.Entities
         public ICollection<Product>? Products { get; set; } = [];
     }
 }
+
+/*
  
+ modelBuilder.Entity<Category>()
+    .HasIndex(c => c.CategoryName)
+    .IsUnique(); // Ensure unique category names for integrity and faster lookups
+
+ */
