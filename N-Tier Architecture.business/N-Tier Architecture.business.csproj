@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>N_Tier_Architecture.business</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\N-Tier Architecture.core\N-Tier Architecture.core.csproj" />
+    <ProjectReference Include="..\N-Tier Architecture.data\N-Tier Architecture.data.csproj" />
+  </ItemGroup>
+
+</Project>
