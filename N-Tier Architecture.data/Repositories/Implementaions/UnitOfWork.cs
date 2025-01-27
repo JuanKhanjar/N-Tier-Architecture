@@ -16,22 +16,20 @@ namespace N_Tier_Architecture.data.Repositories.Implementaions
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
-            Customers = new GenericRepository<Customer>(_context);
-            Categories = new GenericRepository<Category>(_context);
-            Products = new GenericRepository<Product>(_context);
-            Orders = new GenericRepository<Order>(_context);
-            OrderDetails = new GenericRepository<OrderDetail>(_context);
+            Customers = new CustomerRepository(_context);
+            Products = new ProductRepository(_context);
+            Orders = new OrderRepository(_context);
+            Categories = new CategoryRepository(_context);
         }
 
-        public IRepository<Customer> Customers { get; }
-        public IRepository<Category> Categories { get; }
-        public IRepository<Product> Products { get; }
-        public IRepository<Order> Orders { get; }
-        public IRepository<OrderDetail> OrderDetails { get; }
+        public ICustomerRepository Customers { get; private set; }
+        public IProductRepository Products { get; private set; }
+        public IOrderRepository Orders { get; private set; }
+        public ICategoryRepository Categories { get; private set; }
 
-        public async Task<int> SaveAsync()
+        public async Task SaveAsync()
         {
-            return await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public void Dispose()
@@ -39,4 +37,5 @@ namespace N_Tier_Architecture.data.Repositories.Implementaions
             _context.Dispose();
         }
     }
+
 }

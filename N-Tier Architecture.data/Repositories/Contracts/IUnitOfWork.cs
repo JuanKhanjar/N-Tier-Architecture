@@ -9,12 +9,10 @@ namespace N_Tier_Architecture.data.Repositories.Contracts
 {
     public interface IUnitOfWork : IDisposable
     {
-        IRepository<Customer> Customers { get; }
-        IRepository<Category> Categories { get; }
-        IRepository<Product> Products { get; }
-        IRepository<Order> Orders { get; }
-        IRepository<OrderDetail> OrderDetails { get; }
-
-        Task<int> SaveAsync();
+        ICustomerRepository Customers { get; }
+        IProductRepository Products { get; }
+        IOrderRepository Orders { get; }
+        ICategoryRepository Categories { get; }
+        Task SaveAsync();
     }
 }
