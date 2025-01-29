@@ -1,5 +1,6 @@
 ﻿using N_Tier_Architecture.business.Services.Contracts;
 using N_Tier_Architecture.core.Entities;
+using N_Tier_Architecture.data.QueryObjects;
 using N_Tier_Architecture.data.Repositories.Contracts;
 using System;
 using System.Collections.Generic;
@@ -28,56 +29,28 @@ namespace N_Tier_Architecture.business.Services.Implementaions
             return await _unitOfWork.Orders.GetByIdAsync(orderId);
         }
 
-        public async Task AddOrderAsync(Order order)
+        public async Task<IEnumerable<Order>> FindOrdersAsync(OrderQueryParameters parameters)
         {
-            await _unitOfWork.Orders.AddAsync(order);
-            await _unitOfWork.SaveAsync();
+            return await _unitOfWork.Orders.FindAsync(parameters);
         }
 
-        public async Task UpdateOrderAsync(Order order)
+        public async Task PlaceOrderAsync(Order order, IEnumerable<OrderDetail> orderDetails)
         {
-            var existingOrder = await _unitOfWork.Orders.GetByIdAsync(order.OrderId);
-            if (existingOrder == null) throw new KeyNotFoundException("Order not found");
-
-            existingOrder.OrderDate = order.OrderDate;
-            existingOrder.CustomerId = order.CustomerId;
-
-            _unitOfWork.Orders.Update(existingOrder);
+            await _unitOfWork.Orders.AddAsync(order);
+            foreach (var detail in orderDetails)
+            {
+                detail.OrderId = order.OrderId;
+                await _unitOfWork.OrderDetails.AddAsync(detail);
+            }
             await _unitOfWork.SaveAsync();
         }
 
         public async Task DeleteOrderAsync(Guid orderId)
         {
             var order = await _unitOfWork.Orders.GetByIdAsync(orderId);
-            if (order == null) throw new KeyNotFoundException("Order not found");
+            if (order == null) throw new KeyNotFoundException("Order not found.");
 
             _unitOfWork.Orders.Delete(order);
-            await _unitOfWork.SaveAsync();
-        }
-
-        public async Task PlaceOrderAsync(Order order)
-        {
-            // Validate the customer exists
-            var customer = await _unitOfWork.Customers.GetByIdAsync(order.CustomerId);
-            if (customer == null)
-            {
-                throw new KeyNotFoundException("Customer not found.");
-            }
-
-            // Validate and calculate totals for each OrderDetail
-            foreach (var detail in order.OrderDetails)
-            {
-                var product = await _unitOfWork.Products.GetByIdAsync(detail.ProductId);
-                if (product == null)
-                {
-                    throw new KeyNotFoundException($"Product with ID {detail.ProductId} not found.");
-                }
-
-                detail.Total = detail.Quantity * product.Price;
-            }
-
-            // Add the order and its details to the database
-            await _unitOfWork.Orders.AddAsync(order);
             await _unitOfWork.SaveAsync();
         }
     }

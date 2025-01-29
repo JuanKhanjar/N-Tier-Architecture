@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace N_Tier_Architecture.core.Entities
 {
@@ -26,7 +27,6 @@ namespace N_Tier_Architecture.core.Entities
         [Column(TypeName = "decimal(18, 2)")] // Explicit precision and scale
         public decimal Price { get; set; }
 
-        // Navigation properties
         public Category? Category { get; set; }
         public ICollection<OrderDetail>? OrderDetails { get; set; } = [];
     }

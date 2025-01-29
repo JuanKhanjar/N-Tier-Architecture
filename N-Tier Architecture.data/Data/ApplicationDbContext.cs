@@ -18,6 +18,9 @@ namespace N_Tier_Architecture.data.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
 
+        public DbSet<CategoryProductsSummary> CategoryProductsSummaries { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -50,6 +53,21 @@ namespace N_Tier_Architecture.data.Data
                 .HasOne(od => od.Product)
                 .WithMany(p => p.OrderDetails)
                 .HasForeignKey(od => od.ProductId);
+
+            // تكوين العلاقة بين `Category` و `Products`
+            modelBuilder.Entity<Category>()
+                .HasMany(c => c.Products)
+                .WithOne(p => p.Category)
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // تكوين العلاقة بين `Category` و `CategoryProductsSummary`
+            modelBuilder.Entity<CategoryProductsSummary>()
+                .HasOne(s => s.Category)
+                .WithOne(c => c.Summary)
+                .HasForeignKey<CategoryProductsSummary>(s => s.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);  // حذف الملخص عند حذف الفئة
+
 
 
             modelBuilder.Entity<Order>(entity =>

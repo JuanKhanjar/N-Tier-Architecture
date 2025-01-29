@@ -1,4 +1,5 @@
 ﻿using N_Tier_Architecture.core.Entities;
+using N_Tier_Architecture.data.QueryObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +12,7 @@ namespace N_Tier_Architecture.business.Services.Contracts
     {
         Task<IEnumerable<Customer>> GetAllCustomersAsync();
         Task<Customer?> GetCustomerByIdAsync(Guid customerId);
-        Task<Customer?> GetCustomerByAuthUserIdAsync(string authUserId);
-        Task<Customer?> GetCustomerByAuthUserIdAndEmailAsync(string authUserId, string email);
-        Task<Customer?> GetCustomerAsync(ISpecification<Customer> specification);
+        Task<IEnumerable<Customer>> FindCustomersAsync(CustomerQueryParameters parameters);
         Task AddCustomerAsync(Customer customer);
         Task UpdateCustomerAsync(Customer customer);
         Task DeleteCustomerAsync(Guid customerId);

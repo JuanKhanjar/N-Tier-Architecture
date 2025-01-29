@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace N_Tier_Architecture.core.Entities
 {
@@ -15,8 +17,10 @@ namespace N_Tier_Architecture.core.Entities
 
         public string? CategoryImageUrl { get; set; } //if it is null then provide a default image
 
-        // Navigation property
         public ICollection<Product>? Products { get; set; } = [];
+
+        public CategoryProductsSummary? Summary { get; set; }
+
     }
 }
 

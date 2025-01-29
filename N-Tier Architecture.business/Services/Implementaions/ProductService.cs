@@ -1,5 +1,6 @@
 ﻿using N_Tier_Architecture.business.Services.Contracts;
 using N_Tier_Architecture.core.Entities;
+using N_Tier_Architecture.data.QueryObjects;
 using N_Tier_Architecture.data.Repositories.Contracts;
 using System;
 using System.Collections.Generic;
@@ -23,15 +24,14 @@ namespace N_Tier_Architecture.business.Services.Implementaions
             return await _unitOfWork.Products.GetAllAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetAllProductWithIncludesAsync()
-        {
-            var products = await _unitOfWork.Products.GetAllWithIncludesAsync(p => p.Category);
-            return products;
-        }
-
         public async Task<Product?> GetProductByIdAsync(Guid productId)
         {
             return await _unitOfWork.Products.GetByIdAsync(productId);
+        }
+
+        public async Task<IEnumerable<Product>> FindProductsAsync(ProductQueryParameters parameters)
+        {
+            return await _unitOfWork.Products.FindAsync(parameters);
         }
 
         public async Task AddProductAsync(Product product)
@@ -42,23 +42,14 @@ namespace N_Tier_Architecture.business.Services.Implementaions
 
         public async Task UpdateProductAsync(Product product)
         {
-            var existingProduct = await _unitOfWork.Products.GetByIdAsync(product.ProductId);
-            if (existingProduct == null) throw new KeyNotFoundException("Product not found");
-
-            existingProduct.ProductName = product.ProductName;
-            existingProduct.ProductDescription = product.ProductDescription;
-            existingProduct.Price = product.Price;
-            existingProduct.ProductImageUrl = product.ProductImageUrl;
-            existingProduct.CategoryId = product.CategoryId;
-
-            _unitOfWork.Products.Update(existingProduct);
+            _unitOfWork.Products.Update(product);
             await _unitOfWork.SaveAsync();
         }
 
         public async Task DeleteProductAsync(Guid productId)
         {
             var product = await _unitOfWork.Products.GetByIdAsync(productId);
-            if (product == null) throw new KeyNotFoundException("Product not found");
+            if (product == null) throw new KeyNotFoundException("Product not found.");
 
             _unitOfWork.Products.Delete(product);
             await _unitOfWork.SaveAsync();

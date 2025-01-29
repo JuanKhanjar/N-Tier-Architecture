@@ -12,8 +12,8 @@ using N_Tier_Architecture.data.Data;
 namespace N_Tier_Architecture.data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250126112332_Inint")]
-    partial class Inint
+    [Migration("20250129080512_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,11 +47,36 @@ namespace N_Tier_Architecture.data.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("N_Tier_Architecture.core.Entities.CategoryProductsSummary", b =>
+                {
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("AverageProductPrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int>("ProductCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalProductValue")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("CategoryId");
+
+                    b.ToTable("CategoryProductsSummaries");
+                });
+
             modelBuilder.Entity("N_Tier_Architecture.core.Entities.Customer", b =>
                 {
                     b.Property<Guid>("CustomerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AuthUserId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CustomerEmail")
                         .IsRequired()
@@ -141,6 +166,17 @@ namespace N_Tier_Architecture.data.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("N_Tier_Architecture.core.Entities.CategoryProductsSummary", b =>
+                {
+                    b.HasOne("N_Tier_Architecture.core.Entities.Category", "Category")
+                        .WithOne("Summary")
+                        .HasForeignKey("N_Tier_Architecture.core.Entities.CategoryProductsSummary", "CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("N_Tier_Architecture.core.Entities.Order", b =>
                 {
                     b.HasOne("N_Tier_Architecture.core.Entities.Customer", "Customer")
@@ -185,6 +221,8 @@ namespace N_Tier_Architecture.data.Migrations
             modelBuilder.Entity("N_Tier_Architecture.core.Entities.Category", b =>
                 {
                     b.Navigation("Products");
+
+                    b.Navigation("Summary");
                 });
 
             modelBuilder.Entity("N_Tier_Architecture.core.Entities.Customer", b =>

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using N_Tier_Architecture.business.Services.Contracts;
 using N_Tier_Architecture.core.Entities;
+using N_Tier_Architecture.data.QueryObjects;
 
 namespace N_Tier_Architecture.api.Controllers.V1
 {
@@ -16,6 +17,7 @@ namespace N_Tier_Architecture.api.Controllers.V1
             _orderService = orderService;
         }
 
+        // GET: api/Order
         [HttpGet]
         public async Task<IActionResult> GetAllOrders()
         {
@@ -23,59 +25,38 @@ namespace N_Tier_Architecture.api.Controllers.V1
             return Ok(orders);
         }
 
+        // GET: api/Order/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderById(Guid id)
         {
             var order = await _orderService.GetOrderByIdAsync(id);
-            if (order == null) return NotFound("Order not found");
+            if (order == null) return NotFound("Order not found.");
             return Ok(order);
         }
 
+        // POST: api/Order
         [HttpPost]
-        public async Task<IActionResult> AddOrder(Order order)
-        {
-            await _orderService.AddOrderAsync(order);
-            return CreatedAtAction(nameof(GetAllOrders), new { id = order.OrderId }, order);
-        }
-        [HttpPost("place-order")]
         public async Task<IActionResult> PlaceOrder([FromBody] Order order)
         {
-            if (order == null || !order.OrderDetails.Any())
-            {
-                return BadRequest("Order details are required.");
-            }
-
-            try
-            {
-                await _orderService.PlaceOrderAsync(order);
-                return Ok("Order placed successfully.");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            await _orderService.PlaceOrderAsync(order, order.OrderDetails);
+            return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId }, order);
         }
 
-
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateOrder(Guid id, Order order)
-        {
-            if (id != order.OrderId) return BadRequest("Order ID mismatch");
-
-            await _orderService.UpdateOrderAsync(order);
-            return NoContent();
-        }
-
+        // DELETE: api/Order/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrder(Guid id)
         {
             await _orderService.DeleteOrderAsync(id);
             return NoContent();
+        }
+
+        // GET: api/Order/search
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchOrders([FromQuery] OrderQueryParameters parameters)
+        {
+            var orders = await _orderService.FindOrdersAsync(parameters);
+            return Ok(orders);
         }
     }
 }

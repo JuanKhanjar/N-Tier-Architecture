@@ -8,16 +8,18 @@ namespace N_Tier_Architecture.data.Repositories.Implementaions
 {
     public class ProductRepository : GenericRepository<Product>, IProductRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public ProductRepository(ApplicationDbContext context) : base(context)
+        public ProductRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<IEnumerable<Product>> FindAsync(ProductQueryParameters parameters)
         {
-            IQueryable<Product> query = _context.Products;
+            using var context = _contextFactory.CreateDbContext(); // ✅ Correct way to get DbContext instance
+
+            IQueryable<Product> query = context.Products;
 
             if (parameters.ProductId.HasValue)
                 query = query.Where(p => p.ProductId == parameters.ProductId);

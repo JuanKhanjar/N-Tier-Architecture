@@ -1,5 +1,7 @@
-﻿using N_Tier_Architecture.business.Services.Contracts;
+﻿using N_Tier_Architecture.business.DTOs;
+using N_Tier_Architecture.business.Services.Contracts;
 using N_Tier_Architecture.core.Entities;
+using N_Tier_Architecture.data.QueryObjects;
 using N_Tier_Architecture.data.Repositories.Contracts;
 using System;
 using System.Collections.Generic;
@@ -18,39 +20,130 @@ namespace N_Tier_Architecture.business.Services.Implementaions
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
+        public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
         {
-            return await _unitOfWork.Categories.GetAllAsync();
+            var categories = await _unitOfWork.Categories.GetAllAsync();
+
+            var categoryDtos = categories.Select(c =>
+            {
+                var productDtos = c.Products?.Any() == true
+                    ? c.Products.Select(p => new ProductDto
+                    {
+                        ProductId = p.ProductId,
+                        ProductName = p.ProductName,
+                        ProductDescription = p.ProductDescription,
+                        ProductImageUrl = p.ProductImageUrl,
+                        Price = p.Price,
+                        CategoryId = p.CategoryId,
+                        CategoryName = c.CategoryName  
+                    }).ToList()
+                    : [];
+
+                return new CategoryDto
+                {
+                    CategoryId = c.CategoryId,
+                    CategoryName = c.CategoryName,
+                    CategoryDescription = c.CategoryDescription,
+                    CategoryImageUrl = c.CategoryImageUrl,
+                    Products = productDtos
+                };
+            });
+
+            return categoryDtos;
         }
 
-        public async Task<Category?> GetCategoryByIdAsync(Guid categoryId)
+        public async Task<CategoryDto?> GetCategoryByIdAsync(Guid categoryId)
         {
-            return await _unitOfWork.Categories.GetByIdAsync(categoryId);
+            var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
+
+            // If category is null, return null
+            if (category == null)
+                return null;
+            var summary = await _unitOfWork.CategorySummaries.GetByCategoryIdAsync(categoryId);
+
+
+            // Check if Products exist, otherwise return an empty list
+            var productDtos = category.Products?.Any() == true
+                ? category.Products.Select(p => new ProductDto
+                {
+                    ProductId = p.ProductId,
+                    ProductName = p.ProductName,
+                    ProductDescription = p.ProductDescription,
+                    ProductImageUrl = p.ProductImageUrl,
+                    Price = p.Price,
+                    CategoryId = p.CategoryId,
+                    CategoryName = category.CategoryName
+                }).ToList()
+                : new List<ProductDto>(); // Return an empty list instead of `null`
+
+            // Return the DTO
+            return new CategoryDto
+            {
+                CategoryId = category.CategoryId,
+                CategoryName = category.CategoryName,
+                CategoryDescription = category.CategoryDescription,
+                CategoryImageUrl = category.CategoryImageUrl,
+                Products = productDtos,
+                ProductCount = summary?.ProductCount ?? 0,
+                TotalProductValue = summary?.TotalProductValue ?? 0,
+                AverageProductPrice = summary?.AverageProductPrice ?? 0
+            };
         }
 
-        public async Task AddCategoryAsync(Category category)
+        public async Task<IEnumerable<CategoryDto>> FindCategoriesAsync(CategoryQueryParameters parameters)
         {
+            var categories = await _unitOfWork.Categories.FindAsync(parameters);
+
+            return categories.Select(c => new CategoryDto
+            {
+                CategoryId = c.CategoryId,
+                CategoryName = c.CategoryName,
+                CategoryDescription = c.CategoryDescription,
+                CategoryImageUrl = c.CategoryImageUrl,
+                Products = c.Products?.Select(p => new ProductDto
+                {
+                    ProductId = p.ProductId,
+                    ProductName = p.ProductName,
+                    ProductDescription = p.ProductDescription,
+                    ProductImageUrl = p.ProductImageUrl,
+                    Price = p.Price,
+                    CategoryId = p.CategoryId,
+                    CategoryName = c.CategoryName
+                }).ToList() ?? new List<ProductDto>() 
+            }).ToList();
+        }
+
+        public async Task AddCategoryAsync(CategoryDto categoryDto)
+        {
+            var category = new Category
+            {
+                CategoryId = categoryDto.CategoryId,
+                CategoryName = categoryDto.CategoryName,
+                CategoryDescription = categoryDto.CategoryDescription,
+                CategoryImageUrl = categoryDto.CategoryImageUrl
+            };
+
             await _unitOfWork.Categories.AddAsync(category);
             await _unitOfWork.SaveAsync();
         }
 
-        public async Task UpdateCategoryAsync(Category category)
+        public async Task UpdateCategoryAsync(CategoryDto categoryDto)
         {
-            var existingCategory = await _unitOfWork.Categories.GetByIdAsync(category.CategoryId);
-            if (existingCategory == null) throw new KeyNotFoundException("Category not found");
+            var category = await _unitOfWork.Categories.GetByIdAsync(categoryDto.CategoryId);
+            if (category == null) throw new KeyNotFoundException("Category not found.");
 
-            existingCategory.CategoryName = category.CategoryName;
-            existingCategory.CategoryDescription = category.CategoryDescription;
-            existingCategory.CategoryImageUrl = category.CategoryImageUrl;
+            category.CategoryName = categoryDto.CategoryName;
+            category.CategoryDescription = categoryDto.CategoryDescription;
+            category.CategoryImageUrl = categoryDto.CategoryImageUrl;
 
-            _unitOfWork.Categories.Update(existingCategory);
+            _unitOfWork.Categories.Update(category);
             await _unitOfWork.SaveAsync();
         }
 
         public async Task DeleteCategoryAsync(Guid categoryId)
         {
             var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
-            if (category == null) throw new KeyNotFoundException("Category not found");
+            if (category == null) throw new KeyNotFoundException("Category not found.");
 
             _unitOfWork.Categories.Delete(category);
             await _unitOfWork.SaveAsync();

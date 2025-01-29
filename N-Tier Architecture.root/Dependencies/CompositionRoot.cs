@@ -18,7 +18,9 @@ namespace N_Tier_Architecture.root.Dependencies
     {
         public static void InjectDependencies(IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
+            //services.AddDbContext<ApplicationDbContext>(options =>
+            //         options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContextFactory<ApplicationDbContext>(options =>
                      options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
             services.AddScoped<ApplicationDbContext>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
@@ -27,10 +29,17 @@ namespace N_Tier_Architecture.root.Dependencies
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICustomerService, CustomerService>();
 
-            services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<IProductService, ProductService>();
+            //services.AddScoped<IProductService, ProductService>();
+            //services.AddScoped<IProductService, ProductService>();
+            //services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
     }
 }
+
+/*
+ Option 2: Using Separate DbContext Instances (Scoped to Request)
+Instead of using a single DbContext instance, create a new instance per operation.
+ */
+//builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

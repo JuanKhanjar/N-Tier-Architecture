@@ -8,16 +8,18 @@ namespace N_Tier_Architecture.data.Repositories.Implementaions
 {
     public class OrderRepository : GenericRepository<Order>, IOrderRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public OrderRepository(ApplicationDbContext context) : base(context)
+        public OrderRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<IEnumerable<Order>> FindAsync(OrderQueryParameters parameters)
         {
-            IQueryable<Order> query = _context.Orders;
+            using var context = _contextFactory.CreateDbContext();
+
+            IQueryable<Order> query = context.Orders;
 
             if (parameters.OrderId.HasValue)
                 query = query.Where(o => o.OrderId == parameters.OrderId);

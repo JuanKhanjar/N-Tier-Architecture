@@ -13,16 +13,18 @@ namespace N_Tier_Architecture.data.Repositories.Implementaions
 {
     public class CustomerRepository : GenericRepository<Customer>, ICustomerRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public CustomerRepository(ApplicationDbContext context) : base(context)
+        public CustomerRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<IEnumerable<Customer>> FindAsync(CustomerQueryParameters parameters)
         {
-            IQueryable<Customer> query = _context.Customers;
+            using var context = _contextFactory.CreateDbContext(); // ✅ Correct way to get DbContext instance
+
+            IQueryable<Customer> query = context.Customers;
 
             if (parameters.CustomerId.HasValue)
                 query = query.Where(c => c.CustomerId == parameters.CustomerId);

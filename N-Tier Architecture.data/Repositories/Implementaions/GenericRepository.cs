@@ -12,48 +12,58 @@ namespace N_Tier_Architecture.data.Repositories.Implementaions
 {
     public class GenericRepository<T> : IRepository<T> where T : class
     {
-        protected readonly ApplicationDbContext _context;
-        protected readonly DbSet<T> _dbSet;
-
-        public GenericRepository(ApplicationDbContext context)
+        //protected readonly ApplicationDbContext _context;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+        //protected readonly DbSet<T> _dbSet;
+        public GenericRepository(/*ApplicationDbContext context*/IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _context = context;
-            _dbSet = context.Set<T>();
+            //_context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _dbSet.ToListAsync();
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Set<T>().ToListAsync();
         }
 
         public async Task<T?> GetByIdAsync(Guid id)
         {
-            return await _dbSet.FindAsync(id);
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Set<T>().FindAsync(id);
         }
 
         public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
         {
-            return await _dbSet.Where(predicate).ToListAsync();
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Set<T>().Where(predicate).ToListAsync();
         }
 
         public async Task AddAsync(T entity)
         {
-            await _dbSet.AddAsync(entity);
+            using var context = _contextFactory.CreateDbContext();
+            await context.Set<T>().AddAsync(entity);
+            await context.SaveChangesAsync(); // Ensure changes are saved immediately
         }
 
         public void Update(T entity)
         {
-            _dbSet.Update(entity);
+            using var context = _contextFactory.CreateDbContext();
+            context.Set<T>().Update(entity);
+            context.SaveChanges();
         }
 
         public void Delete(T entity)
         {
-            _dbSet.Remove(entity);
+            using var context = _contextFactory.CreateDbContext();
+            context.Set<T>().Remove(entity);
+            context.SaveChanges();
         }
 
         public async Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includeProperties)
         {
-            IQueryable<T> query = _dbSet;
+            using var context = _contextFactory.CreateDbContext();
+            IQueryable<T> query = context.Set<T>();
 
             foreach (var includeProperty in includeProperties)
             {

@@ -1,5 +1,6 @@
 ﻿using N_Tier_Architecture.business.Services.Contracts;
 using N_Tier_Architecture.core.Entities;
+using N_Tier_Architecture.data.QueryObjects;
 using N_Tier_Architecture.data.Repositories.Contracts;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace N_Tier_Architecture.business.Services.Implementaions
 
         public CustomerService(IUnitOfWork unitOfWork)
         {
-            _unitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork?? throw new ArgumentNullException(nameof(unitOfWork));
         }
 
         public async Task<IEnumerable<Customer>> GetAllCustomersAsync()
@@ -28,6 +29,11 @@ namespace N_Tier_Architecture.business.Services.Implementaions
             return await _unitOfWork.Customers.GetByIdAsync(customerId);
         }
 
+        public async Task<IEnumerable<Customer>> FindCustomersAsync(CustomerQueryParameters parameters)
+        {
+            return await _unitOfWork.Customers.FindAsync(parameters);
+        }
+
         public async Task AddCustomerAsync(Customer customer)
         {
             await _unitOfWork.Customers.AddAsync(customer);
@@ -36,52 +42,17 @@ namespace N_Tier_Architecture.business.Services.Implementaions
 
         public async Task UpdateCustomerAsync(Customer customer)
         {
-            var existingCustomer = await _unitOfWork.Customers.GetByIdAsync(customer.CustomerId);
-            if (existingCustomer == null)
-            {
-                throw new KeyNotFoundException("Customer not found.");
-            }
-
-            existingCustomer.CustomerName = customer.CustomerName;
-            existingCustomer.CustomerEmail = customer.CustomerEmail;
-
-            _unitOfWork.Customers.Update(existingCustomer);
+            _unitOfWork.Customers.Update(customer);
             await _unitOfWork.SaveAsync();
         }
 
         public async Task DeleteCustomerAsync(Guid customerId)
         {
             var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
-            if (customer == null)
-            {
-                throw new KeyNotFoundException("Customer not found.");
-            }
+            if (customer == null) throw new KeyNotFoundException("Customer not found.");
 
             _unitOfWork.Customers.Delete(customer);
             await _unitOfWork.SaveAsync();
         }
-
-        public Task<Customer?> GetCustomerByAuthUserIdAsync(string authUserId)
-        {
-            throw new NotImplementedException();
-        }
-        //public async Task<Customer?> GetCustomerByAuthUserIdAndEmailAsync(string authUserId, string email)
-        //{
-        //    return await _unitOfWork.Customers.FindAsync(c => c.AuthUserId == authUserId && c.CustomerEmail == email);
-        //}
-
-        public Task<Customer?> GetCustomerByAuthUserIdAndEmailAsync(string authUserId, string email)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<Customer?> GetCustomerAsync(ISpecification<Customer> specification)
-        {
-            return (Customer?)await _unitOfWork.Customers.FindAsync(specification.Criteria);
-        }
-        //public async Task<Customer?> GetCustomerByAuthUserIdAsync(string authUserId)
-        //{
-        //    return await _unitOfWork.Customers.FindAsync(c => c.AuthUserId == authUserId);
-        //}
     }
 }

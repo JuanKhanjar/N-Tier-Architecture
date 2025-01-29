@@ -1,4 +1,5 @@
-﻿using N_Tier_Architecture.core.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using N_Tier_Architecture.core.Entities;
 using N_Tier_Architecture.data.Data;
 using N_Tier_Architecture.data.Repositories.Contracts;
 using System;
@@ -11,30 +12,32 @@ namespace N_Tier_Architecture.data.Repositories.Implementaions
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly ApplicationDbContext _context;
+        //private readonly ApplicationDbContext _context;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public UnitOfWork(ApplicationDbContext context)
+        public UnitOfWork(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _context = context;
-            Customers = new CustomerRepository(_context);
-            Products = new ProductRepository(_context);
-            Orders = new OrderRepository(_context);
-            Categories = new CategoryRepository(_context);
+            _contextFactory = contextFactory; 
+            Customers = new CustomerRepository(_contextFactory);
+            Products = new ProductRepository(_contextFactory);
+            Orders = new OrderRepository(_contextFactory);
+            Categories = new CategoryRepository(_contextFactory);
+            OrderDetails = new GenericRepository<OrderDetail>(_contextFactory);
+            CategorySummaries = new CategorySummaryRepository(_contextFactory);
         }
 
         public ICustomerRepository Customers { get; private set; }
         public IProductRepository Products { get; private set; }
         public IOrderRepository Orders { get; private set; }
         public ICategoryRepository Categories { get; private set; }
+        public IRepository<OrderDetail> OrderDetails { get; private set; }
+
+        public ICategorySummaryRepository CategorySummaries { get; private set; }
 
         public async Task SaveAsync()
         {
-            await _context.SaveChangesAsync();
-        }
-
-        public void Dispose()
-        {
-            _context.Dispose();
+            using var context = _contextFactory.CreateDbContext();
+            await context.SaveChangesAsync();
         }
     }
 

@@ -7,12 +7,16 @@ using System.Threading.Tasks;
 
 namespace N_Tier_Architecture.data.Repositories.Contracts
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork 
     {
         ICustomerRepository Customers { get; }
         IProductRepository Products { get; }
         IOrderRepository Orders { get; }
         ICategoryRepository Categories { get; }
+        IRepository<OrderDetail> OrderDetails { get; }
+        ICategorySummaryRepository CategorySummaries { get; } // إضافة المخزن الجديد
+
+
         Task SaveAsync();
     }
 }
